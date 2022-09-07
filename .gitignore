@@ -1,0 +1,5 @@
+*.exe
+*.mvr
+*.png
+
+__pycache__
