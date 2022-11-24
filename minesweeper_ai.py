@@ -110,7 +110,6 @@ class msai():
 
     def solve(self, grid, mine_count, ms):
         self.grid = grid
-        print(np.matrix(self.grid))
         mines = []
         safe = []
         for y in range(len(self.grid)):
@@ -149,6 +148,8 @@ class msai():
                 is_safe, tile = self.calculatePossibilities()
                 # toc = time.perf_counter()
                 # print(f"Calculated probabilities in {toc - tic:0.4f} seconds")
+                print(tile)
+                time.sleep(1)
                 ms.click(tile[0], tile[1], is_safe)
 
         # print("mines", mines, "\nsafe", safe)
@@ -320,7 +321,7 @@ if __name__ == "__main__":
 
 
     ms = Minesweeper()
-    while keyboard.is_pressed('q') == False:
+    while keyboard.is_pressed('q') == False and not ms.game_over():
         ai.solve(ms.get_grid(), 10, ms) 
 
-    # ms.game_over()
+    ms.game_over()

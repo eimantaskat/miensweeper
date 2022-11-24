@@ -13,6 +13,14 @@ class Minesweeper():
             raise self.Error("Minesweeper not running")
 
         pyautogui.PAUSE = 0
+        self.happy_face = cv2.imread("images/happy_face.png")
+        self.happy_face = cv2.cvtColor(self.happy_face, cv2.COLOR_BGR2GRAY)
+
+        self.sad_face = cv2.imread("images/sad_face.png")
+        self.sad_face = cv2.cvtColor(self.sad_face, cv2.COLOR_BGR2GRAY)
+
+        self.cool_face = cv2.imread("images/cool_face.png")
+        self.cool_face = cv2.cvtColor(self.cool_face, cv2.COLOR_BGR2GRAY)
 
         self.tile_im = self._get_tile_img()
         self.sz = self.tile_im.shape[0]
@@ -21,10 +29,10 @@ class Minesweeper():
         
         self._bring_to_front()
         self.minesweeper_img = self._get_ms_window_img()
+
+        self.start_game()
+
         self.tiles = self._get_tiles()
-        if not self.tiles:
-            # TODO restart the game
-            pass
 
         self.begin, self.end = self.tiles[0], self.tiles[-1]
         self.width = self.end[0] - self.begin[0] + self.sz
@@ -123,7 +131,6 @@ class Minesweeper():
                 # t[y][x].save('im/'+str(y)+'_'+str(x)+'.png')
                 t[y][x] = self._get_tile_value(t[y][x])
 
-        print(np.matrix(t))
         return t
 
     def click(self, x, y, safe):
@@ -138,6 +145,62 @@ class Minesweeper():
         else:
             pyautogui.rightClick(x_coord, y_coord)
 
+    def start_game(self):
+        # x_offset = self.begin[0] + self.sz // 2
+        # y_offset = self.begin[1]
+
+        # x_coord = x_offset + (self.end[0] - self.begin[0]) // 2
+        # y_coord = y_offset - (self.grid_region[1] - self.region[1]) // 4
+        # pyautogui.click(x_coord, y_coord)
+        for img in (self.happy_face, self.sad_face):
+            screen = ImageGrab.grab(all_screens=True)
+            screen = cv2.cvtColor(np.array(screen), cv2.COLOR_BGR2GRAY)
+            
+            res = cv2.matchTemplate(screen, img, cv2.TM_CCOEFF_NORMED)
+            threshold = .8
+            loc = np.where(res >= threshold)
+
+            locations = [(x, y) for x, y in zip(*loc[::-1])]
+
+            if len(locations) > 1:
+                raise self.Error("something went wrong good luck trying to fix it")
+            elif len(locations) < 1:
+                continue
+            x_coord, y_coord = locations[0]
+            pyautogui.click(x_coord+1, y_coord+1)
+            return
+
+        raise self.Error("Cannot find start button")
+
+    def game_lost(self):
+        ms_window = ImageGrab.grab(bbox = self.region, all_screens=True)
+        ms_window = cv2.cvtColor(np.array(ms_window), cv2.COLOR_BGR2GRAY)
+            
+        res = cv2.matchTemplate(ms_window, self.sad_face, cv2.TM_CCOEFF_NORMED)
+        threshold = .8
+        loc = np.where(res >= threshold)
+
+        locations = [(x, y) for x, y in zip(*loc[::-1])]
+
+        if len(locations):
+            return True
+        else:
+            return False
+
+    def game_won(self):
+        ms_window = ImageGrab.grab(bbox = self.region, all_screens=True)
+        ms_window = cv2.cvtColor(np.array(ms_window), cv2.COLOR_BGR2GRAY)
+            
+        res = cv2.matchTemplate(ms_window, self.cool_face, cv2.TM_CCOEFF_NORMED)
+        threshold = .8
+        loc = np.where(res >= threshold)
+
+        locations = [(x, y) for x, y in zip(*loc[::-1])]
+
+        if len(locations):
+            return True
+        else:
+            return False
+
     def game_over(self):
-        ms_window = pyautogui.screenshot(region=self.region)
-        pass
+        return self.game_lost() or self.game_won()
