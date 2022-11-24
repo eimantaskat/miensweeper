@@ -110,6 +110,7 @@ class msai():
 
     def solve(self, grid, mine_count, ms):
         self.grid = grid
+        print(np.matrix(self.grid))
         mines = []
         safe = []
         for y in range(len(self.grid)):
@@ -317,6 +318,9 @@ if __name__ == "__main__":
     # ai.set_grid(grid)
     # ai.calculatePossibilities()
 
+
     ms = Minesweeper()
     while keyboard.is_pressed('q') == False:
         ai.solve(ms.get_grid(), 10, ms) 
+
+    # ms.game_over()

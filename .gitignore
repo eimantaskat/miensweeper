@@ -1,5 +1,7 @@
 *.exe
 *.mvr
-*.png
+/*.png
+im
 
 __pycache__
+.vscode
