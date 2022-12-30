@@ -24,13 +24,13 @@ class Minesweeper():
 
         self.tile_im = self._get_tile_img()
         self.sz = self.tile_im.shape[0]
-
-        self.region = self._geometry()
         
         self._bring_to_front()
-        self.minesweeper_img = self._get_ms_window_img()
 
         self.start_game()
+
+        self.region = self._geometry()
+        self.minesweeper_img = self._get_ms_window_img()
 
         self.tiles = self._get_tiles()
 

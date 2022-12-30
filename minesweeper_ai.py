@@ -15,7 +15,7 @@ class msai():
         #              [-1, -1, -1, -1, -1, -1, -1, -1],
         #              [-1, -1, -1, -1, -1, -1, -1, -1]]
 
-        self.possibleVariants = []
+        self.possible_variants = []
 
     def _tiles_around(self, x, y):
         if x == 0:
@@ -145,7 +145,7 @@ class msai():
 
             else:
                 # tic = time.perf_counter()
-                is_safe, tile = self.calculatePossibilities()
+                is_safe, tile = self.calculate_possibilities()
                 # toc = time.perf_counter()
                 # print(f"Calculated probabilities in {toc - tic:0.4f} seconds")
                 print(tile)
@@ -243,18 +243,18 @@ class msai():
                         self.grid[y][x] = -1
                     return
 
-        self.appendList(copy.deepcopy(self.grid))
+        self.append_list(copy.deepcopy(self.grid))
 
-    def appendList(self, list):
-        self.possibleVariants.append(list)
+    def append_list(self, list):
+        self.possible_variants.append(list)
 
-    def calculatePossibilities(self):
-        self.possibleVariants = []
+    def calculate_possibilities(self):
+        self.possible_variants = []
         self._possibilities()
 
         for y in range(len(self.grid)):
             for x in range(len(self.grid[0])):
-                for grid in self.possibleVariants:
+                for grid in self.possible_variants:
                     if grid[y][x] == 19:
                         grid[y][x] = 1
                     elif grid[y][x] == 10:
@@ -262,39 +262,50 @@ class msai():
                     else:
                         grid[y][x] = 0
                     
-        probabilityMatrix = np.array([ [0] * len(self.grid[0]) ] * len(self.grid))
+        probability_matrix = np.array([ [0] * len(self.grid[0]) ] * len(self.grid))
 
-        for grid in self.possibleVariants:
-            probabilityMatrix = np.add(probabilityMatrix, np.array(grid))
+        for grid in self.possible_variants:
+            probability_matrix = np.add(probability_matrix, np.array(grid))
 
-        probabilityMatrix = probabilityMatrix.tolist()
+        probability_matrix = probability_matrix.tolist()
 
-        # for i in range(len(probabilityMatrix)):
-        #     for j in range(len(probabilityMatrix[0])):
-        #         probabilityMatrix[i][j] /= len(self.possibleVariants)
+        for i in range(len(probability_matrix)):
+            for j in range(len(probability_matrix[0])):
+                probability_matrix[i][j] /= len(self.possible_variants)
             
         # -1 100% safe
-        # 1  100% mine
+        # 1  100% mines
 
-        mine, mineX, mineY = probabilityMatrix[0][0], 0, 0
-        safe, safeX, safeY = probabilityMatrix[0][0], 0, 0
+        mine, mineX, mineY = probability_matrix[0][0], 0, 0
+        safe, safeX, safeY = probability_matrix[0][0], 0, 0
 
-        allSafe = []
-        allMines = []
-
-        for i in range(len(probabilityMatrix)):
-            for j in range(len(probabilityMatrix[0])):
-                if probabilityMatrix[i][j] > mine:
-                    mine = probabilityMatrix[i][j]
+        for i in range(len(probability_matrix)):
+            for j in range(len(probability_matrix[0])):
+                if probability_matrix[i][j] > mine:
+                    mine = probability_matrix[i][j]
                     mineX = j
                     mineY = i
-                elif probabilityMatrix[i][j] < safe:
-                    safe = probabilityMatrix[i][j]
+                elif probability_matrix[i][j] < safe:
+                    safe = probability_matrix[i][j]
                     safeX = j
                     safeY = i
 
         # print(mine, mineX, mineY)
         # print(safe, safeX, safeY)
+
+        no_best_tile = probability_matrix.count(0) != len(probability_matrix)
+        if no_best_tile:
+            probability_matrix = self.possible_variants[0]
+            for i in range(len(probability_matrix)):
+                for j in range(len(probability_matrix[0])):
+                    if probability_matrix[i][j] > mine:
+                        mine = probability_matrix[i][j]
+                        mineX = j
+                        mineY = i
+                    elif probability_matrix[i][j] < safe:
+                        safe = probability_matrix[i][j]
+                        safeX = j
+                        safeY = i
         
         if -1 * mine >= safe:
             return True, [safeX, safeY]
@@ -307,17 +318,25 @@ class msai():
 if __name__ == "__main__":
     ai = msai()
 
-    # grid = [[ 0,  1, -1, -1, -1, -1, -1, -1],
-    #         [ 0,  1, -1, -1, -1, -1, -1, -1],
-    #         [ 1,  3, -1, -1, -1, -1, -1, -1],
-    #         [-1, -1, -1, -1, -1, -1, -1, -1],
-    #         [-1, -1, -1, -1, -1, -1, -1, -1],
-    #         [-1, -1, -1, -1, -1, -1, -1, -1],
-    #         [-1, -1, -1, -1, -1, -1, -1, -1],
-    #         [-1, -1, -1, -1, -1, -1, -1, -1]]
+    # grid = [[0, 0, 0, 0, 0, 1, 9, 1, 0, 0, 0, 1, 3, 9, 3, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 2, 9, 2, 0, 0],
+    #         [0, 0, 0, 0, 0, 2, 3, 3, 1, 0, 1, 3, 9, 9, 9, 2, 0, 2, 9, 2, 0, 0, 1, 1, 1, 2, 9, 3, 2, 2],
+    #         [0, 0, 0, 0, 0, 1, 9, 9, 1, 0, 2, 9, 9, 6, 9, 2, 0, 2, 9, 3, 1, 0, 2, 9, 2, 1, 1, 2, 9, 9],
+    #         [1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 3, 9, 6, 9, 3, 1, 0, 1, 2, 9, 1, 1, 3, 9, 2, 0, 0, 1, 2, 2],
+    #         [1, 9, 2, 9, 1, 0, 0, 0, 2, 9, 4, 3, 9, 9, 2, 0, 0, 0, 1, 1, 1, 1, 9, 3, 2, 0, 0, 1, 2, 2],
+    #         [1, 1, 2, 1, 1, 0, 0, 0, 2, 9, 9, 4, 4, 3, 2, 1, 1, 1, 2, 3, 2, 3, 4, 9, 3, 1, 0, 1, 9, 9],
+    #         [0, 0, 0, 0, 0, 1, 1, 1, 1, 3, 4, 9, 9, 1, 1, 9, 1, 2, 9, 9, 9, 3, 9, 9, 9, 1, 0, 1, 3, 9],
+    #         [0, 0, 1, 2, 2, 2, 9, 2, 1, 1, 9, 4, 3, 2, 1, 1, 1, 2, 9, 5, 4, 9, 3, 4, 3, 2, 0, 1, 2, 2],
+    #         [1, 2, 2, 9, 9, 3, 3, 9, 2, 2, 1, 2, 9, 2, 1, 0, 0, 1, 2, 9, 2, 1, 1, 1, 9, 1, 0, 2, 9, 2],
+    #         [9, 3, 9, 4, 2, 2, 9, 4, 9, 2, 0, 2, 3, 9, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0, 2, 9, 2],
+    #         [2, 4, 9, 2, 0, 1, 1, 3, 9, 3, 1, 2, 9, 2, 1, 1, 9, 2, 9, 1, 2, 9, 3, 1, 1, 0, 0, 1, 2, 2],
+    #         [9, 2, 2, 2, 2, 2, 2, 2, 1, 2, 9, 2, 1, 1, 1, 2, 3, 3, 2, 2, 3, 9, 3, 9, 3, 3, 2, 1, 1, 9],
+    #         [1, 1, 1, 9, 2, 9, 9, 1, 0, 1, 2, 3, 2, 1, 1, 9, 3, 9, 2, 2, 9, 4, 4, 3, 9, 9, 9, 1, 1, 1],
+    #         [0, 1, 2, 2, 2, 2, 2, 1, 0, 0, 1, 9, 9, 1, 1, 2, 4, 9, 3, 3, 9, 9, 3, 9, 4, 9, 3, 1, 0, 0],
+    #         [1, 3, 9, 2, 1, 2, 2, 1, 0, 1, 3, 4, 3, 2, 1, 2, 9, 3, 9, 2, 3, 9, 3, 1, 2, 1, 2, 2, 2, 1],
+    #         [-1, -1, 9, 2, 1, 9, 9, 1, 0, 1, 9, 9, 1, 1, 9, 2, 1, 2, 1, 1, 1, 1, 1, 0, 0, 0, 1, 9, 9, 1]]
 
     # ai.set_grid(grid)
-    # ai.calculatePossibilities()
+    # print(ai.calculate_possibilities())
 
 
     ms = Minesweeper()
