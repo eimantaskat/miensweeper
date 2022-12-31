@@ -1,7 +1,8 @@
 *.exe
 /*.png
-im
+*.so
 
 __pycache__
 .vscode
 replays
+im

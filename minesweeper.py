@@ -152,7 +152,7 @@ class Minesweeper():
         # x_coord = x_offset + (self.end[0] - self.begin[0]) // 2
         # y_coord = y_offset - (self.grid_region[1] - self.region[1]) // 4
         # pyautogui.click(x_coord, y_coord)
-        for img in (self.happy_face, self.sad_face):
+        for img in (self.happy_face, self.sad_face, self.cool_face):
             screen = ImageGrab.grab(all_screens=True)
             screen = cv2.cvtColor(np.array(screen), cv2.COLOR_BGR2GRAY)
             

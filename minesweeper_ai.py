@@ -3,6 +3,9 @@ import numpy as np
 import copy
 import keyboard
 import time
+from random import randint
+from wrapper import CWrapper
+
 
 class msai():
     def __init__(self):
@@ -16,6 +19,7 @@ class msai():
         #              [-1, -1, -1, -1, -1, -1, -1, -1]]
 
         self.possible_variants = []
+        self.wrapper = CWrapper()
 
     def _tiles_around(self, x, y):
         if x == 0:
@@ -144,13 +148,24 @@ class msai():
             #     ms.click(m - 1, n - 1, True)
 
             else:
-                # tic = time.perf_counter()
-                is_safe, tile = self.calculate_possibilities()
-                # toc = time.perf_counter()
-                # print(f"Calculated probabilities in {toc - tic:0.4f} seconds")
-                print(tile)
-                time.sleep(1)
-                ms.click(tile[0], tile[1], is_safe)
+                moves = self.wrapper.getBestMove(self.grid)
+
+                if moves:
+                    for is_safe, tile in moves:
+                        time.sleep(.05)
+                        ms.click(tile[0], tile[1], is_safe)
+                else:
+                    if self.grid[0][m - 1] == -1:
+                        ms.click(m - 1, 0, True)
+                    elif self.grid[n - 1][0] == -1:
+                        ms.click(0, n - 1, True)
+                    elif self.grid[n - 1][m - 1] == -1:
+                        ms.click(m - 1, n - 1, True)
+                    else:
+                        x, y = randint(0, m), randint(0, n)
+                        while grid[x][y] != -1: 
+                            x, y = randint(0, m), randint(0, n)
+                        ms.click(x, y, True)
 
         # print("mines", mines, "\nsafe", safe)
         return self.grid
