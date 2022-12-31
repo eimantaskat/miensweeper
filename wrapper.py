@@ -31,5 +31,4 @@ class CWrapper():
                     [bool(move[0]), [move[1], move[2]]]
                 )
 
-        print(moves_to_do)
         return moves_to_do

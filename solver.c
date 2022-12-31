@@ -26,7 +26,7 @@ float largestNumber(float *arr, uint32_t size)
     double largest = abs(arr[0]);
     for(int i = 1; i < size; i++)
     {
-        if(arr[i] > largest)
+        if(abs(arr[i]) > largest)
         {
             largest = abs(arr[i]);
         }
@@ -215,7 +215,7 @@ bool gridIsValid(const int8_t *grid, const uint16_t gridHeight, const uint16_t g
     return true;
 }
 
-void getPossibilities(int8_t *grid, const uint16_t gridHeight, const uint16_t gridWidth, float *probabilityMatrix, int32_t *possibleSolutionsCount)
+void getPossibilities(int8_t *grid, const uint16_t gridHeight, const uint16_t gridWidth, float *probabilityMatrix, int32_t *possibleSolutionsCount, tile *t)
 {
     uint8_t guesses[POSSIBLE_GUESSES_SIZE] = {19, 10};
 
@@ -234,7 +234,7 @@ void getPossibilities(int8_t *grid, const uint16_t gridHeight, const uint16_t gr
                     bool isValid = gridIsValid(grid, gridHeight, gridWidth);
                     if (isValid)
                     {
-                        getPossibilities(grid, gridHeight, gridWidth, probabilityMatrix, possibleSolutionsCount);
+                        getPossibilities(grid, gridHeight, gridWidth, probabilityMatrix, possibleSolutionsCount, t);
                     }
                     
                     grid[x + gridWidth * y] = -1;
@@ -244,15 +244,21 @@ void getPossibilities(int8_t *grid, const uint16_t gridHeight, const uint16_t gr
         }
     }
 
-    for (uint32_t i = 0; i < gridHeight * gridWidth; i++)
+    for (uint16_t y = 0; y < gridHeight; y++)
     {
-        if (grid[i] == 19)
+        for (uint16_t x = 0; x < gridWidth; x++)
         {
-            probabilityMatrix[i]--;
-        }
-        else if (grid[i] == 10)
-        {
-            probabilityMatrix[i]++;
+            uint32_t i = x + gridWidth * y;
+            if (grid[i] == 19)
+            {
+                probabilityMatrix[i]--;
+            }
+            else if (grid[i] == 10)
+            {
+                probabilityMatrix[i]++;
+                t->x = x;
+                t->y = y;
+            }
         }
     }
     (*possibleSolutionsCount)++;
@@ -263,12 +269,13 @@ void getBestMove(int8_t *grid, const uint16_t gridHeight, const uint16_t gridWid
     float *probabilityMatrix;
     int32_t possibleSolutionsCount;
     uint16_t bestMovesSize;
+    tile t;
 
     probabilityMatrix = (float*) calloc(gridHeight * gridWidth, sizeof(float));
     possibleSolutionsCount = 0;
     bestMovesSize = 0;
 
-    getPossibilities(grid, gridHeight, gridWidth, probabilityMatrix, &possibleSolutionsCount);
+    getPossibilities(grid, gridHeight, gridWidth, probabilityMatrix, &possibleSolutionsCount, &t);
 
     for (uint32_t i = 0; i < gridHeight * gridWidth; i++)
     {
@@ -278,6 +285,9 @@ void getBestMove(int8_t *grid, const uint16_t gridHeight, const uint16_t gridWid
     float highestProbability = largestNumber(probabilityMatrix, gridHeight * gridWidth);
     if (!highestProbability)
     {
+        bestMoves[0] = true;
+        bestMoves[1] = t.x;
+        bestMoves[2] = t.y;
         goto deallocate;
     }
     

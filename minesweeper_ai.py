@@ -148,24 +148,40 @@ class msai():
             #     ms.click(m - 1, n - 1, True)
 
             else:
+                # is_safe, tile = self.calculate_possibilities()
+                # time.sleep(.05)
+                # if np.sum(tile) != 0:
+                #     ms.click(tile[0], tile[1], is_safe)
+                # else:
+                #     if self.grid[0][m - 1] == -1:
+                #         ms.click(m - 1, 0, True)
+                #     elif self.grid[n - 1][0] == -1:
+                #         ms.click(0, n - 1, True)
+                #     elif self.grid[n - 1][m - 1] == -1:
+                #         ms.click(m - 1, n - 1, True)
+                #     else:
+                #         x, y = randint(0, m-1), randint(0, n-1)
+                #         while grid[y][x] != -1: 
+                #             x, y = randint(0, m-1), randint(0, n-1)
+                #         ms.click(x, y, True)
                 moves = self.wrapper.getBestMove(self.grid)
 
-                if moves:
-                    for is_safe, tile in moves:
-                        time.sleep(.05)
+                for is_safe, tile in moves:
+                    time.sleep(.05)
+                    if np.sum(tile) != 0:
                         ms.click(tile[0], tile[1], is_safe)
-                else:
-                    if self.grid[0][m - 1] == -1:
-                        ms.click(m - 1, 0, True)
-                    elif self.grid[n - 1][0] == -1:
-                        ms.click(0, n - 1, True)
-                    elif self.grid[n - 1][m - 1] == -1:
-                        ms.click(m - 1, n - 1, True)
                     else:
-                        x, y = randint(0, m), randint(0, n)
-                        while grid[x][y] != -1: 
-                            x, y = randint(0, m), randint(0, n)
-                        ms.click(x, y, True)
+                        if self.grid[0][m - 1] == -1:
+                            ms.click(m - 1, 0, True)
+                        elif self.grid[n - 1][0] == -1:
+                            ms.click(0, n - 1, True)
+                        elif self.grid[n - 1][m - 1] == -1:
+                            ms.click(m - 1, n - 1, True)
+                        else:
+                            x, y = randint(0, m-1), randint(0, n-1)
+                            while grid[y][x] != -1:
+                                x, y = randint(0, m-1), randint(0, n-1)
+                            ms.click(x, y, True)
 
         # print("mines", mines, "\nsafe", safe)
         return self.grid
@@ -284,9 +300,9 @@ class msai():
 
         probability_matrix = probability_matrix.tolist()
 
-        for i in range(len(probability_matrix)):
-            for j in range(len(probability_matrix[0])):
-                probability_matrix[i][j] /= len(self.possible_variants)
+        # for i in range(len(probability_matrix)):
+        #     for j in range(len(probability_matrix[0])):
+        #         probability_matrix[i][j] /= len(self.possible_variants)
             
         # -1 100% safe
         # 1  100% mines
@@ -353,9 +369,31 @@ if __name__ == "__main__":
     # ai.set_grid(grid)
     # print(ai.calculate_possibilities())
 
-
     ms = Minesweeper()
-    while keyboard.is_pressed('q') == False and not ms.game_over():
-        ai.solve(ms.get_grid(), 10, ms) 
+    
+    games = 100
+    games_played = 0
+    wins = 0
+    losses = 0
+    start = time.perf_counter()
+    while not keyboard.is_pressed('q') and games_played < games:
+        ms.start_game()
 
-    ms.game_over()
+        while not keyboard.is_pressed('q') and not ms.game_over():
+            ai.solve(ms.get_grid(), 10, ms) 
+
+        if ms.game_won():
+            wins += 1
+        elif ms.game_lost():
+            losses += 1
+        
+        games_played += 1
+        print(f"{games_played}/{games}")
+    stop = time.perf_counter()
+
+    print(f"Done in {stop - start}s")
+    print(f"Average time to solve: {(stop - start)/games}s")
+    print(f"Wins: {wins}")
+    print(f"Losses: {losses}")
+    print(f"Win%: {wins / games * 100}")
+    
