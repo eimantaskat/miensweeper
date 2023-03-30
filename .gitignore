@@ -1,8 +1,11 @@
+Lib
+Include
+Scripts
+im
+replays
+.vscode
+*.so
+*.cfg
 *.exe
 /*.png
-*.so
-
 __pycache__
-.vscode
-replays
-im
